@@ -1,0 +1,35 @@
+EXPLAIN
+
+	- Explain returns the execution plan for a query without running it.
+	- Very useful utility for comparing two queries that will yield the same result in a bid to find out which implementation is optimal.
+
+	Stages
+
+
+	Extended
+
+
+	Authourization
+		explain authorization select year, month, avg(depdelay) from flight_ptd_clustd_raw where year = 2004 group by year, month order by month;
+
+explain select year, count(1) from flight_raw group by year;
+
+Example:
+	Compare using explain the impact of partition using the two queries.
+		--without partition
+		explain select year, avg(depdelay) from flight_raw where year = 2004 group by year;
+		--with partition
+		explain select year, avg(depdelay) from flight_ptd_raw where year = 2004 group by year;	
+
+
+
+
+ANALYZE
+	- compute statistics that would enable more optimization from the CBO during query
+
+		analyze table flight_raw compute statistics;
+
+
+
+
+

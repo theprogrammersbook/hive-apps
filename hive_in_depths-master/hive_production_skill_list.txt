@@ -1,0 +1,33 @@
+Production Hive Use
+==============================
+-		Partitioning
+-		Explain
+-		Statistics
+-		Ordering - ORDER BY/DISTRIBUTE BY/SORT BY/CLUSTER BY
+-		Clustering
+-		Joins 
+		Sampling
+-		Indexes
+-			File Formats
+			Text, Json, CSV, Sequence, Avro, ORC, Parquet
+-			Compression and compression codec
+
+-			Integration with Spark
+-			Integration with Impala
+-		Execution engines (MR, Spark and Tez)
+-			Archiving
+-		Analytic/Windows Functions
+
+
+Slow changing Dimension hackerday  (Data warehousing)
+==========================================
+-		Fact table and Dimension
+-		Transaction (ACID)
+-		Slow Changing Dimensions (Type 2,3)
+			In Spark
+
+
+Hive 2.0
+==========================================
+-		HPLSQL (2.0 feature)
+-		LLAP

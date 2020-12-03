@@ -1,0 +1,81 @@
+JOINS
+=======================
+MapJoin
+	-	Data is read from the small table and broadcasted to the nodes for the bigger table
+	-	MapJoins can use unequal operation
+	-	MJ can be invoked through hint 
+
+			select /*+ MAPJOIN(carrier) */ from flights f join carrier c on 
+					c.carriercode = f.carrier
+
+	-	MJ can also be invoked by using configuration in the script of using the hive-site.xml file
+			set hive.auto.convert.join=true;
+
+	- Once the above property is set, any table with size less than that specified in the configuration property will be joined in the map state or broadcast.
+
+			set hive.mapjoin.smalltable.filesize;
+			set hive.smalltable.filesize;
+			
+	Not supported
+		-	The use of MAPJOIN after UNION ALL, LATERAL VIEW, GROUP BY/JOIN/SORT BY/CLUSTER BY/DISTRIBUTE BY
+		-	The use of MAPJOIN before UNION, JOIN, and another MAPJOIN
+
+Bucket Map Join
+	-	See clustering.txt
+	-	smartly join very large tables
+	- 	The number of buckets of the left (bigger) table must be a multiple of the number of buckets on the right (smaller table).
+	-	if there is sorting, use the bucket map sort join.
+
+	SET hive.auto.convert.join=true; --default false
+	SET hive.optimize.bucketmapjoin=true; --default false
+
+
+Left Semi Join
+	-	But IN/NOT IN/EXISTS/NOT EXIST now exists in Hive	
+
+Sort merge bucket (SMB) join
+	- A join performed on a clustered table with the same bucketted, sorted and joined condition column. 
+	- exact bucket in the clustering definition.
+	To enable this
+		SET hive.input.format=
+			org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+		SET hive.auto.convert.sortmerge.join=true;
+		SET hive.optimize.bucketmapjoin=true;
+		SET hive.optimize.bucketmapjoin.sortedmerge=true;
+		SET hive.auto.convert.sortmerge.join.noconditionaltask=true;
+
+
+Sort merge bucket map (SMBM) join
+	An SMB join that is triggered only in the map side on the clustered column. So the conditions for SMB also hold.
+	To enable,
+
+		SET hive.auto.convert.join=true;
+		SET hive.auto.convert.sortmerge.join=true
+		SET hive.optimize.bucketmapjoin=true;
+		SET hive.optimize.bucketmapjoin.sortedmerge=true;
+		SET hive.auto.convert.sortmerge.join.noconditionaltask=true;
+		SET hive.auto.convert.sortmerge.join.bigtable.selection.policy=
+			org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ;
+
+Skew Join
+	Necessary when walking with unevenly distributed dataset where fewer nodes get to do most of the work.
+
+		SET hive.optimize.skewjoin=true;
+		SET hive.skewjoin.key=100000;
+
+	in the case of skewed keys in group by, optimize it with the following 
+
+		SET hive.groupby.skewindata=true;
+
+
+
+
+explain select flightnum, year, month, dayofmonth, dayofweek, c.description, f.tailnum, p.aircraft_type,
+CONCAT(a.airport, ' ', a.city, ', ', a.state, ', ', a.country ) origin, 
+CONCAT(b.airport, ' ', b.city, ', ', b.state, ', ', b.country ) dest 
+from flight_raw f 
+left join carrier_raw c on f.uniquecarrier = c.code
+left join airport_raw a on f.origin = a.iata
+left join airport_raw b on f.dest = b.iata
+left join plane_info_raw p on p.tailnum = f.tailnum;
+
